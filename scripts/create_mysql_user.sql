@@ -1,0 +1,12 @@
+CREATE DATABASE IF NOT EXISTS `artcell_db`
+  DEFAULT CHARACTER SET utf8mb4
+  DEFAULT COLLATE utf8mb4_unicode_ci;
+
+CREATE USER IF NOT EXISTS 'artcell_app'@'localhost'
+  IDENTIFIED BY 'hw7DTMIe5@AXspOmP!yoR1sD';
+
+GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, ALTER, INDEX, DROP
+  ON `artcell_db`.*
+  TO 'artcell_app'@'localhost';
+
+FLUSH PRIVILEGES;
