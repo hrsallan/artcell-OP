@@ -5,6 +5,7 @@ from pathlib import Path
 import os
 from core.database import (
     registrar_usuario,
+    autenticar_usuario,
     DatabaseOperationError
 )
 
@@ -105,7 +106,47 @@ def register_usuario():
         data=resultado["data"],
     )
 
-# Falta a API de login
+# Falta a definição de um limite de tentativas + verificação conta ativa + geração do token jwt
+@app.route("/api/login", methods=["POST"])
+def login():
+    dados = obter_json_requisicao()
+    usuario = dados.get("usuario", "").strip()
+    senha = dados.get("senha", "")
+
+    if not all ([usuario, senha]):
+        return criar_resposta(
+            success=False,
+            message="Todos os campos são obrigatórios! Tente novamente.",
+            status_code=HTTPStatus.BAD_REQUEST,
+            error="validation_error",
+        )
+    
+    try:
+        resultado = autenticar_usuario(usuario=usuario, senha=senha)
+    except DatabaseOperationError:
+        return criar_resposta(
+            success=False,
+            message="Não foi possível processar o login no momento.",
+            status_code=HTTPStatus.INTERNAL_SERVER_ERROR,
+            error="database_error",
+        )
+
+    if not resultado["success"]:
+        return criar_resposta(
+            success=False,
+            message=resultado["message"],
+            status_code=HTTPStatus.UNAUTHORIZED,
+            error=resultado["error"],
+        )
+    
+    dados_usuario = resultado["data"]
+
+    return criar_resposta(
+        success=True,
+        message=resultado["message"],
+        status_code=HTTPStatus.OK,
+        data=dados_usuario,
+    )
 
 if __name__ == "__main__":
     app.run(debug=True)

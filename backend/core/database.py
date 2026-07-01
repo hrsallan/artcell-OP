@@ -221,3 +221,35 @@ def registrar_usuario(nome, usuario, senha, email, telefone):
         raise DatabaseOperationError("Falha ao registrar o usuário.") from error
     finally:
         fechar_recursos(conexao=conexao, cursor=cursor)
+
+
+def autenticar_usuario(usuario, senha):
+    """Valida as credenciais de acesso de um usuário."""
+
+    usuario_encontrado = consultar_usuario_por_username(usuario)
+    if usuario_encontrado is None:
+        return {
+            "success": False,
+            "message": "Usuário ou senha inválidos.",
+            "error": "invalid_credentials",
+        }
+
+    senha_hash_armazenada = usuario_encontrado["senha"]
+    if not verificar_hash_senha(senha, senha_hash_armazenada):
+        return {
+            "success": False,
+            "message": "Usuário ou senha inválidos.",
+            "error": "invalid_credentials",
+        }
+
+    return {
+        "success": True,
+        "message": "Login realizado com sucesso.",
+        "data": {
+            "usuario_id": usuario_encontrado["id"],
+            "nome": usuario_encontrado["nome"],
+            "usuario": usuario_encontrado["usuario"],
+            "email": usuario_encontrado["email"],
+            "telefone": usuario_encontrado["telefone"],
+        },
+    }
